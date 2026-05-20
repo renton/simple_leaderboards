@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'New' }} game — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ 'Edit' if mode == 'edit' else 'New' }} game</h1>
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+
+    <div class="field">
+      {{ form.name.label }} {{ form.name() }}
+      {% for e in form.name.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.slug.label }} {{ form.slug() }}
+      <p class="muted">URL-safe identifier the game client sends to the API. Lowercase letters, digits, dashes.</p>
+      {% for e in form.slug.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.timezone.label }} {{ form.timezone() }}
+      <p class="muted">Determines "today", "this week", etc. for daily/weekly/monthly leaderboards.</p>
+      {% for e in form.timezone.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.score_direction.label }} {{ form.score_direction() }}
+    </div>
+
+    <div class="field">
+      {{ form.min_score.label }} {{ form.min_score() }}
+      {% for e in form.min_score.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.max_score.label }} {{ form.max_score() }}
+      {% for e in form.max_score.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      {{ form.metadata_json.label }} {{ form.metadata_json() }}
+      <p class="muted">
+        Optional JSON. To validate <code>custom_data</code> on submitted scores, include
+        a <code>custom_fields</code> map:
+        <code>{"custom_fields": {"combo": {"type": "integer", "required": false}}}</code>.
+      </p>
+      {% for e in form.metadata_json.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="field">
+      <label>{{ form.archived() }} {{ form.archived.label.text }}</label>
+    </div>
+
+    <div class="actions">
+      {{ form.submit(class_="button-primary") }}
+      <a class="button-secondary" href="{{ url_for('admin.games_list') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

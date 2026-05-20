@@ -1,0 +1,77 @@
+name: simple-leaderboards
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: simple-leaderboards-app:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      REDIS_RATELIMIT_URL: redis://redis:6379/1
+    ports:
+      # Bind to localhost only; production deployments should put a TLS-terminating
+      # reverse proxy (Caddy/nginx) in front of this and never expose 8000 publicly.
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-leaderboards}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-leaderboards}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leaderboards} -d ${POSTGRES_DB:-leaderboards}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - internal
+    # Bound to localhost only so the host can run `flask db migrate` and ad-hoc
+    # psql/pgcli sessions. NOT exposed on 0.0.0.0; production behind a reverse
+    # proxy on a remote host should remove this `ports:` block.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 3s
+    networks:
+      - internal
+    # No `ports:` — Redis is intentionally not bound to the host. If you need
+    # to inspect it during development, use `docker compose exec redis redis-cli`.
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  internal:
+    driver: bridge

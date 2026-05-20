@@ -1,0 +1,13 @@
+{% macro pagination(current, total_pages, base_url) %}
+{% if total_pages > 1 %}
+<div class="pagination">
+  {% if current > 1 %}<a href="{{ base_url }}&amp;page={{ current - 1 }}">← Prev</a>{% else %}<span class="muted">← Prev</span>{% endif %}
+  <span class="muted">Page {{ current }} of {{ total_pages }}</span>
+  {% if current < total_pages %}<a href="{{ base_url }}&amp;page={{ current + 1 }}">Next →</a>{% else %}<span class="muted">Next →</span>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro csrf_field() %}
+{% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+{% endmacro %}

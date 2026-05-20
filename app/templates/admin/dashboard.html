@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Leaderboards</h1>
+
+  {% if not games %}
+    <p class="muted">No games registered yet. <a href="{{ url_for('admin.games_new') }}">Create one</a> to start collecting scores.</p>
+  {% else %}
+  <form method="get" class="filter-form">
+    <div class="field">
+      <label for="game_id">Game</label>
+      <select id="game_id" name="game_id" onchange="this.form.submit()">
+        {% for g in games %}
+          <option value="{{ g.id }}" {% if selected_game and g.id == selected_game.id %}selected{% endif %}>
+            {{ g.name }} ({{ g.slug }}){% if g.archived %} — archived{% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter-row">
+      <div class="field">
+        <label for="range">Range</label>
+        <select id="range" name="range">
+          {% for r in range_options %}
+            <option value="{{ r }}" {% if filters.range == r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="seed">Seed</label>
+        <input id="seed" name="seed" type="text" value="{{ filters.seed }}" placeholder="e.g. 2026-05-20">
+      </div>
+      <div class="field">
+        <label for="name">Player name contains</label>
+        <input id="name" name="name" type="text" value="{{ filters.name }}">
+      </div>
+      <div class="field">
+        <label for="sort">Sort</label>
+        <select id="sort" name="sort">
+          {% for s in ['score', 'submitted_at', 'played_at'] %}
+            <option value="{{ s }}" {% if filters.sort == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="page_size">Per page</label>
+        <select id="page_size" name="page_size">
+          {% for ps in [10, 25, 50] %}
+            <option value="{{ ps }}" {% if filters.page_size == ps %}selected{% endif %}>{{ ps }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="button-primary" type="submit">Apply filters</button>
+    </div>
+  </form>
+  {% endif %}
+</section>
+
+{% if selected_game and result %}
+<section class="card">
+  <h2>
+    {{ selected_game.name }}
+    <span class="muted">({{ result.total }} total)</span>
+  </h2>
+  {% if result.results %}
+    <table>
+      <thead>
+        <tr>
+          <th class="right">#</th>
+          <th>Player</th>
+          <th class="right">Score</th>
+          <th>Submitted</th>
+          <th>Played</th>
+          <th>Seed</th>
+          <th>Device</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in result.results %}
+        <tr>
+          <td class="right tabular">{{ row.rank }}</td>
+          <td>{{ row.player_name }}</td>
+          <td class="right tabular">{{ row.score }}</td>
+          <td class="muted">{{ row.submitted_at }}</td>
+          <td class="muted">{{ row.played_at or '—' }}</td>
+          <td>{{ row.seed or '—' }}</td>
+          <td class="muted">
+            {{ row.device_info.os or '—' }} / {{ row.device_info.browser or '—' }}
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('admin.scores_delete', score_id=row.id) }}" class="inline" onsubmit="return confirm('Soft-delete this score?');">
+              {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button type="submit" class="button-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% if row.custom_data %}
+        <tr>
+          <td></td>
+          <td colspan="7" class="muted">
+            <strong>custom:</strong>
+            {% for k, v in row.custom_data.items() %}
+              <code>{{ k }}={{ v }}</code>&nbsp;
+            {% endfor %}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      {% set prev_page = filters.page - 1 if filters.page > 1 else 1 %}
+      {% set next_page = filters.page + 1 %}
+      {% set last_page = (result.total + result.page_size - 1) // result.page_size %}
+      {% if filters.page > 1 %}
+        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ prev_page }}">← Prev</a>
+      {% else %}
+        <span class="muted">← Prev</span>
+      {% endif %}
+      <span class="muted">Page {{ filters.page }} of {{ last_page if last_page > 0 else 1 }}</span>
+      {% if filters.page < last_page %}
+        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ next_page }}">Next →</a>
+      {% else %}
+        <span class="muted">Next →</span>
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="muted">No scores match these filters.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

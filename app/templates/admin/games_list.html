@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Games — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Games</h1>
+  <p><a class="button-primary" href="{{ url_for('admin.games_new') }}">+ New game</a></p>
+
+  {% if games %}
+  <table>
+    <thead>
+      <tr>
+        <th>Slug</th>
+        <th>Name</th>
+        <th>Timezone</th>
+        <th>Direction</th>
+        <th class="right">Bounds</th>
+        <th>Archived</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+      <tr>
+        <td><code>{{ g.slug }}</code></td>
+        <td>{{ g.name }}</td>
+        <td class="muted">{{ g.timezone }}</td>
+        <td>{{ g.score_direction }}</td>
+        <td class="right tabular">
+          {% if g.min_score is not none or g.max_score is not none %}
+            {{ g.min_score if g.min_score is not none else '—' }}
+            …
+            {{ g.max_score if g.max_score is not none else '—' }}
+          {% else %}<span class="muted">unbounded</span>{% endif %}
+        </td>
+        <td>{{ 'yes' if g.archived else 'no' }}</td>
+        <td><a href="{{ url_for('admin.games_edit', game_id=g.id) }}">Edit</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No games yet. Create your first to start collecting scores.</p>
+  {% endif %}
+</section>
+{% endblock %}

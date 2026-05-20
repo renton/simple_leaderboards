@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}New admin — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Create admin user</h1>
+  <form method="post" novalidate>
+    {{ form.csrf_token }}
+    <div class="field">
+      {{ form.username.label }} {{ form.username(autocomplete="off") }}
+      {% for e in form.username.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.password.label }} {{ form.password(autocomplete="new-password") }}
+      {% for e in form.password.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.confirm.label }} {{ form.confirm(autocomplete="new-password") }}
+      {% for e in form.confirm.errors %}<p class="error">{{ e }}</p>{% endfor %}
+    </div>
+    <div class="actions">
+      {{ form.submit(class_="button-primary") }}
+      <a class="button-secondary" href="{{ url_for('admin.users_list') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

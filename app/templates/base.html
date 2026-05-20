@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Simple Leaderboards{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a href="{{ url_for('admin.index') }}" class="brand">Simple Leaderboards</a>
+  {% if current_user.is_authenticated %}
+  <nav>
+    <a href="{{ url_for('admin.index') }}">Dashboard</a>
+    <a href="{{ url_for('admin.games_list') }}">Games</a>
+    <a href="{{ url_for('admin.users_list') }}">Admins</a>
+    <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
+      {{ csrf_field() if csrf_field is defined }}
+      <button type="submit" class="link-button">Sign out ({{ current_user.username }})</button>
+    </form>
+  </nav>
+  {% endif %}
+</header>
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="flash flash-{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
