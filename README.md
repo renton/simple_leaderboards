@@ -58,7 +58,7 @@ All configuration is via environment variables (or a `.env` file). The required 
 |---|---|---|
 | `SECRET_KEY` | _none_ | **required.** HMAC signing key for session tokens and Flask sessions. Rotate to invalidate all outstanding tokens. |
 | `POSTGRES_USER` | `leaderboards` | App's database role (non-superuser recommended). |
-| `POSTGRES_PASSWORD` | _none_ | **required.** Database password. |
+| `POSTGRES_PASSWORD` | `changeme-localdev-only` | **Always set this** for any real deployment. The default exists so that an override which deletes the bundled `db` service can apply cleanly — compose interpolation can't be skipped on a service that's about to be removed. The default is intentionally a string nobody could mistake for safe. |
 | `POSTGRES_DB` | `leaderboards` | Database name. |
 | `POSTGRES_HOST` | `db` | Compose service name. |
 | `POSTGRES_PORT` | `5432` | |

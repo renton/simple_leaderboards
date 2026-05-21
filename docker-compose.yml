@@ -30,7 +30,12 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-leaderboards}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      # Defaulted (not :?) so a docker-compose.override.yml that deletes
+      # this `db` service entirely can apply cleanly — compose interpolates
+      # ${...} before applying overrides, so a strict :? fails even when the
+      # service is about to be removed. For real local dev, set
+      # POSTGRES_PASSWORD in .env; the default below is obviously unsafe.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme-localdev-only}
       POSTGRES_DB: ${POSTGRES_DB:-leaderboards}
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
