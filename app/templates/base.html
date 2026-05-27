@@ -16,7 +16,7 @@
     <a href="{{ url_for('admin.users_list') }}">Admins</a>
     <a href="{{ url_for('admin.api_test') }}">API Test</a>
     <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
-      {{ csrf_field() if csrf_field is defined }}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="link-button">Sign out ({{ current_user.username }})</button>
     </form>
   </nav>
