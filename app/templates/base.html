@@ -14,6 +14,7 @@
     <a href="{{ url_for('admin.index') }}">Dashboard</a>
     <a href="{{ url_for('admin.games_list') }}">Games</a>
     <a href="{{ url_for('admin.users_list') }}">Admins</a>
+    <a href="{{ url_for('admin.api_test') }}">API Test</a>
     <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
       {{ csrf_field() if csrf_field is defined }}
       <button type="submit" class="link-button">Sign out ({{ current_user.username }})</button>
