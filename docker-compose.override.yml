@@ -1,26 +1,22 @@
   services:
-    # Strip the bundled stateful services — we use the shared ones.
     db: !reset null
     redis: !reset null
 
     app:
       container_name: leaderboards-app
-      # Wipe depends_on (it referenced db/redis) and the localhost port binding
-      # (Caddy reaches us over the shared network).
+      restart: unless-stopped
       depends_on: !reset []
-      ports: !reset []
       environment:
-        # Point at shared postgres (the role/db from step 2).
         POSTGRES_HOST: postgres
         POSTGRES_PORT: "5432"
         POSTGRES_USER: leaderboards
         POSTGRES_PASSWORD: ${LEADERBOARDS_DB_PASSWORD}
         POSTGRES_DB: leaderboards
-        # Shared redis requires auth. Two DBs: 0 = app cache, 1 = rate limiter.
         REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
         REDIS_RATELIMIT_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
-      # `internal` had db/redis on it — they're gone. Replace with `shared` only.
-      networks: !reset [shared]
+      networks:
+        - internal
+        - shared
 
   networks:
     shared:
