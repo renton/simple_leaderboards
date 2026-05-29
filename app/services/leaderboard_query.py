@@ -98,6 +98,8 @@ def run_leaderboard_query(
 
     if q.seed is not None:
         base = base.where(Score.seed == q.seed)
+    else:
+        base = base.where(Score.seed.is_(None))
     if q.name:
         base = base.where(Score.player_name.ilike(f"%{q.name}%"))
 
@@ -129,6 +131,8 @@ def run_leaderboard_query(
             )
     if q.seed is not None:
         count_q = count_q.where(Score.seed == q.seed)
+    else:
+        count_q = count_q.where(Score.seed.is_(None))
     if q.name:
         count_q = count_q.where(Score.player_name.ilike(f"%{q.name}%"))
     total = int(session.execute(count_q).scalar_one())

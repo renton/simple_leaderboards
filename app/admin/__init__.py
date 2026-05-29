@@ -24,4 +24,4 @@ def _require_login_for_admin():
 
 
 # Routes are registered via side-effect imports below.
-from app.admin import auth, dashboard, games, scores, users  # noqa: E402,F401
+from app.admin import api_test, auth, dashboard, games, scores, users  # noqa: E402,F401

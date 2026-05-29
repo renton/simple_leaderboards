@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}API Test — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>API Test</h1>
+  <p class="muted">Build a <code>GET /api/v1/leaderboards</code> request and inspect the response.</p>
+
+  <div class="filter-form">
+    <div class="filter-row">
+      <div class="field">
+        <label for="param-game">Game</label>
+        <select id="param-game">
+          {% for g in games %}
+            <option value="{{ g.slug }}">{{ g.name }} ({{ g.slug }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="param-range">Range</label>
+        <select id="param-range">
+          {% for r in range_options %}
+            <option value="{{ r }}">{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="param-sort">Sort</label>
+        <select id="param-sort">
+          {% for s in sort_options %}
+            <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="field">
+        <label for="param-seed">Seed</label>
+        <input id="param-seed" type="text" placeholder="leave blank for unseeded">
+      </div>
+      <div class="field">
+        <label for="param-name">Player name</label>
+        <input id="param-name" type="text" placeholder="optional filter">
+      </div>
+      <div class="field">
+        <label for="param-page-size">Page size</label>
+        <input id="param-page-size" type="number" value="{{ default_page_size }}" min="1" max="{{ max_page_size }}">
+      </div>
+      <div class="field">
+        <label for="param-page">Page</label>
+        <input id="param-page" type="number" value="1" min="1">
+      </div>
+    </div>
+
+    <div class="api-test-url-row">
+      <span class="muted" style="font-size:0.85em;">Request URL</span>
+      <code id="request-url" class="url-preview"></code>
+    </div>
+
+    <div class="actions">
+      <button class="button-primary" id="send-btn" type="button">Send Request</button>
+      <button class="button-secondary" id="clear-btn" type="button">Clear</button>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="response-card" style="display:none">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h2 style="margin:0;">Response</h2>
+    <span id="status-badge" class="status-badge"></span>
+  </div>
+  <pre id="response-body" class="json-output"></pre>
+</section>
+
+<script src="{{ url_for('static', filename='js/api_test.js') }}"></script>
+{% endblock %}

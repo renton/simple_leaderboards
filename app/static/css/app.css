@@ -104,3 +104,48 @@ tr:hover td { background: var(--panel-2); }
 .pagination { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
 .filter-form .filter-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .filter-form .filter-row .field { flex: 1; min-width: 140px; }
+
+/* API test page */
+.api-test-url-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 6px;
+}
+.url-preview {
+  display: block;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 0.85em;
+  word-break: break-all;
+  color: var(--accent);
+  min-height: 2em;
+}
+.json-output {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow-x: auto;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.status-ok   { background: #1d2f1d; color: var(--ok); }
+.status-err  { background: #2d1a1a; color: var(--danger); }
+.json-key    { color: #9ec4f0; }
+.json-string { color: #b5e4a0; }
+.json-number { color: #f0c070; }
+.json-bool   { color: #d08080; }
+.json-null   { color: var(--muted); }
