@@ -23,13 +23,13 @@ def _rate_limit():
 
 
 def _parse_params(args):
-    raw = {k: args.get(k) for k in args.keys()}
+    raw = {k: args.get(k) for k in args}
     for k in ("page", "page_size"):
         if k in raw and raw[k] is not None:
             try:
                 raw[k] = int(raw[k])
             except ValueError:
-                raise ValueError(f"{k} must be an integer")
+                raise ValueError(f"{k} must be an integer") from None
     return raw
 
 

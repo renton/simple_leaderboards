@@ -35,8 +35,8 @@ def create_app(config: Config | None = None) -> Flask:
 
     register_cli(app)
 
-    from app.api import api_bp
     from app.admin import admin_bp
+    from app.api import api_bp
 
     csrf.exempt(api_bp)
     app.register_blueprint(api_bp)

@@ -24,7 +24,7 @@ def _rate_limit():
 
 def _parse_params(args):
     # Flask's request.args is a MultiDict; pydantic wants plain dict.
-    raw = {k: args.get(k) for k in args.keys()}
+    raw = {k: args.get(k) for k in args}
     # Coerce numeric params; Pydantic accepts string ints but explicit is safer
     # for stable cache keys (params_hash sees these as plain ints).
     for k in ("page", "page_size"):
@@ -32,7 +32,7 @@ def _parse_params(args):
             try:
                 raw[k] = int(raw[k])
             except ValueError:
-                raise ValueError(f"{k} must be an integer")
+                raise ValueError(f"{k} must be an integer") from None
     return raw
 
 

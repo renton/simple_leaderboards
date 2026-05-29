@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -45,18 +45,18 @@ class AdminUser(Base, UserMixin):
     def is_locked(self, now: datetime | None = None) -> bool:
         if self.locked_until is None:
             return False
-        now = now or datetime.now(timezone.utc)
+        now = now or datetime.now(UTC)
         return self.locked_until > now
 
     def register_failed_login(self, max_attempts: int, lockout_minutes: int) -> None:
         self.failed_login_attempts = (self.failed_login_attempts or 0) + 1
         if self.failed_login_attempts >= max_attempts:
-            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=lockout_minutes)
+            self.locked_until = datetime.now(UTC) + timedelta(minutes=lockout_minutes)
 
     def register_successful_login(self) -> None:
         self.failed_login_attempts = 0
         self.locked_until = None
-        self.last_login_at = datetime.now(timezone.utc)
+        self.last_login_at = datetime.now(UTC)
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<AdminUser id={self.id} username={self.username!r}>"

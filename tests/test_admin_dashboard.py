@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+
 import pytest
 
 
@@ -37,10 +39,10 @@ def test_dashboard_picks_first_non_archived_game(signed_in_client, make_game, ma
 
 
 def test_dashboard_filter_by_range(signed_in_client, make_game, make_score):
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
     g = make_game()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     make_score(game=g, player_name="today", score=100, submitted_at=now - timedelta(hours=1))
     make_score(game=g, player_name="oldweek", score=999, submitted_at=now - timedelta(days=30))
     resp = signed_in_client.get(f"/admin/?game_id={g.id}&range=daily")
@@ -70,6 +72,6 @@ def test_dashboard_pagination_caps(signed_in_client, make_game, make_score):
 
 
 def test_dashboard_includes_logout_link(signed_in_client, make_game):
-    g = make_game()
+    make_game()
     resp = signed_in_client.get("/admin/")
     assert b"/admin/logout" in resp.data

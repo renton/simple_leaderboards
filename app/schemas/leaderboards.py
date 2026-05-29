@@ -30,4 +30,4 @@ class LeaderboardQueryIn(BaseModel):
 
 
 # Re-export for callers that introspect the set.
-__all__ = ["LeaderboardQueryIn", "VALID_RANGES"]
+__all__ = ["VALID_RANGES", "LeaderboardQueryIn"]

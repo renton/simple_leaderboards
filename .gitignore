@@ -147,6 +147,11 @@ activemq-data/
 # SageMath parsed files
 *.sage.py
 
+# Deployment-specific compose override (not shipped; see docs for prod deploy).
+# Compose auto-applies this file, so keeping it out of the repo lets a fresh
+# clone run the bundled three-container stack with `docker compose up`.
+docker-compose.override.yml
+
 # Environments
 .env
 .envrc

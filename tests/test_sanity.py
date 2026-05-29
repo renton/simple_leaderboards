@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -25,7 +25,7 @@ def make_game(min_score=None, max_score=None, custom_fields=None) -> Game:
 
 
 def base_kwargs(**overrides):
-    now = datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
     base = dict(
         game=make_game(min_score=0, max_score=1_000_000),
         player_name="ren",
@@ -99,20 +99,20 @@ class TestScoreBounds:
 
 class TestPlayedAt:
     def test_future_rejected(self):
-        now = datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
         future = now + timedelta(minutes=10)
         with pytest.raises(SanityError) as e:
             sanitize_submission(**base_kwargs(played_at=future, now=now))
         assert e.value.code == "invalid_played_at"
 
     def test_within_skew_window_accepted(self):
-        now = datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
         nearly_future = now + timedelta(seconds=30)
         out = sanitize_submission(**base_kwargs(played_at=nearly_future, now=now))
         assert out.played_at == nearly_future
 
     def test_before_token_issued_rejected(self):
-        now = datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+        now = datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
         token_issued = int(now.timestamp())
         long_ago = now - timedelta(hours=1)
         with pytest.raises(SanityError) as e:

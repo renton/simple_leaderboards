@@ -10,7 +10,7 @@ without any `AT TIME ZONE` SQL.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 VALID_RANGES = frozenset(
@@ -57,9 +57,9 @@ def range_to_bounds(
         raise InvalidTimezoneError(f"invalid IANA timezone {tz_name!r}") from e
 
     if now_utc is None:
-        now_utc = datetime.now(timezone.utc)
+        now_utc = datetime.now(UTC)
     elif now_utc.tzinfo is None:
-        now_utc = now_utc.replace(tzinfo=timezone.utc)
+        now_utc = now_utc.replace(tzinfo=UTC)
 
     local = now_utc.astimezone(tz)
 
@@ -86,4 +86,4 @@ def range_to_bounds(
     else:  # pragma: no cover - VALID_RANGES guard above
         raise InvalidRangeError(f"unknown range {range_name!r}")
 
-    return start_local.astimezone(timezone.utc), end_local.astimezone(timezone.utc)
+    return start_local.astimezone(UTC), end_local.astimezone(UTC)

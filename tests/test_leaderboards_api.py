@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC
+
 
 def _issue_and_submit(client, slug, *, player_name, score):
     token_resp = client.post("/api/v1/sessions", json={"game": slug})
@@ -123,10 +125,10 @@ def test_seed_filter(client, make_game):
 def test_soft_deleted_score_hidden(client, make_game, make_score):
     g = make_game()
     make_score(game=g, player_name="alive", score=100)
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     make_score(
-        game=g, player_name="dead", score=200, deleted_at=datetime.now(timezone.utc)
+        game=g, player_name="dead", score=200, deleted_at=datetime.now(UTC)
     )
     resp = client.get(f"/api/v1/leaderboards?game={g.slug}")
     body = resp.get_json()

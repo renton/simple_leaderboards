@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -78,11 +78,11 @@ def _check_played_at(
         return None
     if played_at.tzinfo is None:
         raise SanityError("invalid_played_at", "played_at must be timezone-aware")
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     if played_at > now + timedelta(seconds=skew_seconds):
         raise SanityError("invalid_played_at", "played_at is in the future")
     if token_issued_at is not None:
-        issued_dt = datetime.fromtimestamp(token_issued_at, tz=timezone.utc)
+        issued_dt = datetime.fromtimestamp(token_issued_at, tz=UTC)
         if played_at < issued_dt - timedelta(seconds=skew_seconds):
             raise SanityError(
                 "invalid_played_at",

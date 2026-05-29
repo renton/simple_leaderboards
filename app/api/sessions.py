@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from flask import current_app, jsonify, request
 from pydantic import ValidationError
@@ -56,7 +56,7 @@ def create_session():
         },
     )
 
-    expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl)
+    expires_at = datetime.now(UTC) + timedelta(seconds=ttl)
     return jsonify(
         {
             "session_token": issued.token,

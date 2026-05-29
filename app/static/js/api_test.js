@@ -1,19 +1,50 @@
 (function () {
-  const inputs = ['param-game','param-range','param-sort','param-seed','param-name','param-page-size','param-page'];
+  const inputs = [
+    'param-endpoint','param-game','param-range','param-sort','param-seed',
+    'param-name','param-since','param-until','param-page-size','param-page'
+  ];
+
+  function val(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function currentEndpoint() {
+    return document.getElementById('param-endpoint').value;
+  }
+
+  function toggleEndpointFields() {
+    const ep = currentEndpoint();
+    document.querySelectorAll('.endpoint-leaderboards').forEach(function (el) {
+      el.style.display = ep === 'leaderboards' ? '' : 'none';
+    });
+    document.querySelectorAll('.endpoint-champions').forEach(function (el) {
+      el.style.display = ep === 'champions' ? '' : 'none';
+    });
+  }
 
   function buildUrl() {
-    const game     = document.getElementById('param-game').value;
-    const range    = document.getElementById('param-range').value;
-    const sort     = document.getElementById('param-sort').value;
-    const seed     = document.getElementById('param-seed').value.trim();
-    const name     = document.getElementById('param-name').value.trim();
-    const pageSize = document.getElementById('param-page-size').value;
-    const page     = document.getElementById('param-page').value;
+    const ep       = currentEndpoint();
+    const game     = val('param-game');
+    const pageSize = val('param-page-size');
+    const page     = val('param-page');
 
+    if (ep === 'champions') {
+      const since = val('param-since');
+      const until = val('param-until');
+      const params = new URLSearchParams({ game, page_size: pageSize, page });
+      if (since) params.set('since', since);
+      if (until) params.set('until', until);
+      return '/api/v1/champions?' + params.toString();
+    }
+
+    const range = val('param-range');
+    const sort  = val('param-sort');
+    const seed  = val('param-seed');
+    const name  = val('param-name');
     const params = new URLSearchParams({ game, range, sort, page_size: pageSize, page });
     if (seed) params.set('seed', seed);
     if (name) params.set('name', name);
-
     return '/api/v1/leaderboards?' + params.toString();
   }
 
@@ -28,6 +59,9 @@
     el.addEventListener('change', updateUrl);
   });
 
+  document.getElementById('param-endpoint').addEventListener('change', toggleEndpointFields);
+
+  toggleEndpointFields();
   updateUrl();
 
   function syntaxHighlight(json) {

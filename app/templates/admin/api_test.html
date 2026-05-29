@@ -3,10 +3,17 @@
 {% block content %}
 <section class="card">
   <h1>API Test</h1>
-  <p class="muted">Build a <code>GET /api/v1/leaderboards</code> request and inspect the response.</p>
+  <p class="muted">Build a public read request and inspect the response.</p>
 
   <div class="filter-form">
     <div class="filter-row">
+      <div class="field">
+        <label for="param-endpoint">Endpoint</label>
+        <select id="param-endpoint">
+          <option value="leaderboards">GET /api/v1/leaderboards</option>
+          <option value="champions">GET /api/v1/champions</option>
+        </select>
+      </div>
       <div class="field">
         <label for="param-game">Game</label>
         <select id="param-game">
@@ -15,6 +22,10 @@
           {% endfor %}
         </select>
       </div>
+    </div>
+
+    {# ---- Leaderboards-only params ---- #}
+    <div class="filter-row endpoint-leaderboards">
       <div class="field">
         <label for="param-range">Range</label>
         <select id="param-range">
@@ -31,8 +42,6 @@
           {% endfor %}
         </select>
       </div>
-    </div>
-    <div class="filter-row">
       <div class="field">
         <label for="param-seed">Seed</label>
         <input id="param-seed" type="text" placeholder="leave blank for unseeded">
@@ -41,6 +50,22 @@
         <label for="param-name">Player name</label>
         <input id="param-name" type="text" placeholder="optional filter">
       </div>
+    </div>
+
+    {# ---- Champions-only params ---- #}
+    <div class="filter-row endpoint-champions" style="display:none">
+      <div class="field">
+        <label for="param-since">Since (ISO 8601, UTC)</label>
+        <input id="param-since" type="text" placeholder="e.g. 2026-01-01T00:00:00Z">
+      </div>
+      <div class="field">
+        <label for="param-until">Until (ISO 8601, UTC)</label>
+        <input id="param-until" type="text" placeholder="optional, e.g. 2026-04-01T00:00:00Z">
+      </div>
+    </div>
+
+    {# ---- Shared pagination ---- #}
+    <div class="filter-row">
       <div class="field">
         <label for="param-page-size">Page size</label>
         <input id="param-page-size" type="number" value="{{ default_page_size }}" min="1" max="{{ max_page_size }}">

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -26,12 +26,11 @@ class ChampionsQueryIn(BaseModel):
     def _assume_utc_if_naive(cls, value: datetime | None) -> datetime | None:
         if value is None or value.tzinfo is not None:
             return value
-        from datetime import timezone
 
-        return value.replace(tzinfo=timezone.utc)
+        return value.replace(tzinfo=UTC)
 
     @model_validator(mode="after")
-    def _check_window_order(self) -> "ChampionsQueryIn":
+    def _check_window_order(self) -> ChampionsQueryIn:
         if self.since is not None and self.until is not None and self.since >= self.until:
             raise ValueError("since must be earlier than until")
         return self

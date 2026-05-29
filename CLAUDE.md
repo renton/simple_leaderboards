@@ -83,9 +83,18 @@ app/
 │   ├── __init__.py         admin_bp + before_request login enforcement
 │   ├── forms.py            WTForms classes
 │   ├── auth.py / dashboard.py / games.py / users.py / scores.py
+│   └── api_test.py         read-only page to build/fire /leaderboards + /champions queries (admin-only)
 ├── templates/admin/        Jinja2 templates (always autoescape on; never |safe)
-└── static/css/app.css      single minimal stylesheet
+└── static/
+    ├── css/app.css         single minimal stylesheet
+    ├── js/api_test.js      vanilla JS for the API-test page (NO build step; no React/npm)
+    └── favicon.svg         ascending-bars mark
 ```
+
+**No frontend build step / no React.** The admin UI is 100% server-rendered Jinja2.
+The only JS is `static/js/api_test.js`, a plain `<script>` served as a static
+asset. There is no `package.json`, bundler, or `npm`/`yarn` — nothing to "build"
+or "refresh." Edit the `.js`/`.css`/templates and reload the page.
 
 ## Load-bearing files (highest care if changing)
 
@@ -119,6 +128,7 @@ app/
 4. **No minimum-duration anti-cheat in v1.** Defer until a real game asks for it.
 5. **Four public endpoints**, not two — `/sessions` is a protocol prerequisite, `/champions` is a derived view over seeded play. Both documented in README. Don't "simplify" by removing them.
 6. **Champions endpoint computes on read, not via an aggregate table.** The SQL is a CTE with `ROW_NUMBER() OVER (PARTITION BY seed ORDER BY score)` + group-by. Rides the partial index `ix_scores_champions` on `(game_id, submitted_at, seed) WHERE seed IS NOT NULL AND deleted_at IS NULL`. An aggregate table was considered and deferred — soft-delete consistency would require recomputing per-seed leaders anyway, which is the same query.
+7. **`/leaderboards` segregates seeded vs non-seeded scores.** With no `seed` param it filters `seed IS NULL` (normal play only); with a `seed` it returns only that seed. There is intentionally no "all scores regardless of seed" view — daily challenges must not pollute the all-time board. See `app/services/leaderboard_query.py` (the `else: base.where(Score.seed.is_(None))` branch). If you change this, update `tests/test_smoke.py` and `docs/api.md` together.
 
 ## Common gotchas I hit during the initial build
 

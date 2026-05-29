@@ -9,7 +9,6 @@ from app.admin import admin_bp
 from app.extensions import db
 from app.models.game import Game
 from app.services.leaderboard_query import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
-from app.services.time_ranges import VALID_RANGES
 
 
 @admin_bp.route("/api-test")

@@ -148,11 +148,13 @@ Read-only, cacheable (Redis-backed), no auth required.
 |---|---|---|---|
 | `game` | string (slug) | _required_ | |
 | `range` | enum | `all-time` | One of `all-time`, `yearly`, `monthly`, `weekly`, `daily`, `hourly`. Period is computed in the game's IANA timezone. ISO week (Monday start). |
-| `seed` | string | _none_ | Exact match against `Score.seed`. |
+| `seed` | string | _none_ | Exact match against `Score.seed`. **See note below** — omitting `seed` returns only non-seeded scores. |
 | `name` | string | _none_ | Case-insensitive substring match on `player_name`. |
 | `sort` | enum | `score` | `score` (uses game's `score_direction`), `submitted_at`, or `played_at` (both descending). |
 | `page` | int | `1` | |
 | `page_size` | int | `25` | Max `50`; `>50` is hard-rejected. |
+
+> **Seed filtering.** A score's `seed` segregates which board it belongs to. The main leaderboard (no `seed` param) returns **only scores submitted with no seed** (`seed IS NULL`) — i.e. normal play. To see a daily-challenge board, pass that challenge's `seed`, which returns **only** scores for that seed. There is no way to mix seeded and non-seeded scores in one response; this keeps daily challenges from polluting the all-time board and vice-versa.
 
 **Response (200)**
 

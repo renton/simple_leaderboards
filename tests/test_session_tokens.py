@@ -116,15 +116,14 @@ def test_expired_token_rejected(r):
             secret_key=SECRET, game_id=42, redis_client=r, ttl_seconds=TTL
         )
     # Two hours later, max_age=60s -> SignatureExpired.
-    with freeze_time("2026-05-20 14:00:00"):
-        with pytest.raises(st.InvalidSessionTokenError):
-            st.verify_and_consume(
-                secret_key=SECRET,
-                token=issued.token,
-                expected_game_id=42,
-                redis_client=r,
-                max_age_seconds=60,
-            )
+    with freeze_time("2026-05-20 14:00:00"), pytest.raises(st.InvalidSessionTokenError):
+        st.verify_and_consume(
+            secret_key=SECRET,
+            token=issued.token,
+            expected_game_id=42,
+            redis_client=r,
+            max_age_seconds=60,
+        )
 
 
 def test_expired_nonce_rejected(r):

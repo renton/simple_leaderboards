@@ -2,7 +2,20 @@
 name = "simple-leaderboards"
 version = "0.1.0"
 description = "A self-hosted leaderboards service for video games."
+readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ren Lawrence" }]
+keywords = ["leaderboards", "games", "flask", "self-hosted", "high-scores"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
 dependencies = [
     "Flask>=3.0,<4.0",
     "Flask-SQLAlchemy>=3.1,<4.0",
@@ -34,7 +47,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

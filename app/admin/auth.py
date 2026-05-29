@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from flask import (
     current_app,
@@ -46,21 +46,21 @@ def login():
         user = db.session.execute(
             db.select(AdminUser).where(AdminUser.username == username)
         ).scalar_one_or_none()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if user is None:
             # Always run argon2 verify on a sentinel to keep timing roughly equal.
+            import contextlib
+
             from argon2 import PasswordHasher
 
-            try:
+            with contextlib.suppress(Exception):
                 PasswordHasher().verify(
                     "$argon2id$v=19$m=65536,t=3,p=4$"
                     "c29tZXNhbHQAAAAAAAAAAA$"
                     "RdescudvJCsgt3ub+b+dWRWJTmaaJObG",
                     form.password.data,
                 )
-            except Exception:
-                pass
             log.info("admin_login_failed_unknown_user", extra={"username": username})
             flash("Invalid credentials.", "danger")
             return render_template("admin/login.html", form=form), 401

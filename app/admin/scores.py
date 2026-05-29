@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from flask import abort, flash, redirect, request, url_for
 from flask_login import current_user, login_required
@@ -46,7 +46,7 @@ def scores_delete(score_id: int):
         flash("Score is already deleted.", "warning")
         return redirect(_safe_next())
 
-    score.deleted_at = datetime.now(timezone.utc)
+    score.deleted_at = datetime.now(UTC)
     _audit(
         "score.soft_delete",
         score,

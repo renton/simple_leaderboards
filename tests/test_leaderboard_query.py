@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -11,7 +11,7 @@ from app.services.leaderboard_query import LeaderboardQuery, run_leaderboard_que
 
 
 def _now():
-    return datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+    return datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
 
 
 @pytest.fixture

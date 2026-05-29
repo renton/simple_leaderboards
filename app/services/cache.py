@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 GAME_VERSION_KEY = "lb:game:{game_id}:ver"
 QUERY_KEY = "lb:q:{game_id}:v{ver}:{h}"

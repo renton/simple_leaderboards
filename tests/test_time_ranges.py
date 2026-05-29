@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -15,7 +15,7 @@ from app.services.time_ranges import (
 
 
 def utc(year, month, day, hour=0, minute=0, second=0):
-    return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)
+    return datetime(year, month, day, hour, minute, second, tzinfo=UTC)
 
 
 def test_all_time_returns_open_interval():
@@ -35,8 +35,8 @@ def test_daily_in_game_timezone_spans_midnight():
         "daily", "America/New_York", now_utc=utc(2026, 5, 20, 3, 0)
     )
     ny = ZoneInfo("America/New_York")
-    assert start == datetime(2026, 5, 19, 0, 0, tzinfo=ny).astimezone(timezone.utc)
-    assert end == datetime(2026, 5, 20, 0, 0, tzinfo=ny).astimezone(timezone.utc)
+    assert start == datetime(2026, 5, 19, 0, 0, tzinfo=ny).astimezone(UTC)
+    assert end == datetime(2026, 5, 20, 0, 0, tzinfo=ny).astimezone(UTC)
     assert (end - start) == timedelta(days=1)
 
 
@@ -66,8 +66,8 @@ def test_yearly_in_game_timezone():
     # Asia/Tokyo is UTC+9, no DST.
     start, end = range_to_bounds("yearly", "Asia/Tokyo", now_utc=utc(2026, 7, 1, 0, 0))
     tokyo = ZoneInfo("Asia/Tokyo")
-    assert start == datetime(2026, 1, 1, 0, 0, tzinfo=tokyo).astimezone(timezone.utc)
-    assert end == datetime(2027, 1, 1, 0, 0, tzinfo=tokyo).astimezone(timezone.utc)
+    assert start == datetime(2026, 1, 1, 0, 0, tzinfo=tokyo).astimezone(UTC)
+    assert end == datetime(2027, 1, 1, 0, 0, tzinfo=tokyo).astimezone(UTC)
 
 
 def test_daily_across_spring_dst_boundary():

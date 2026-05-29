@@ -15,6 +15,8 @@ A small self-hosted leaderboards service for video games. One Flask app + Postgr
 - [Production deployment](#production-deployment)
 - [What's in / out of scope](#whats-in--out-of-scope)
 - [Threat model](#threat-model)
+- [Running tests](#running-tests)
+- [License & disclaimer](#license--disclaimer)
 
 ---
 
@@ -133,10 +135,10 @@ curl -fsS -X POST http://localhost:8000/api/v1/scores \
 ### Reading the leaderboard
 
 ```bash
-# All-time top 25.
+# All-time top 25 of NORMAL (non-seeded) play.
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic'
 
-# Daily challenge with a seed.
+# A specific daily-challenge board (pass its seed).
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&range=daily&seed=daily-2026-05-20'
 
 # Search for a player.
@@ -145,6 +147,8 @@ curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&name=ren'
 # Paginate.
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&page=2&page_size=50'
 ```
+
+> **Seeded vs. normal scores don't mix.** Omitting `seed` returns only scores submitted with no seed (normal play). Passing a `seed` returns only that seed's scores. This keeps daily-challenge runs from polluting the all-time board and vice-versa. See [`docs/api.md`](docs/api.md#get-apiv1leaderboards--query-scores).
 
 ### Daily-seed champions
 
@@ -203,15 +207,28 @@ The compose file is production-usable, with these requirements:
 
 7. **Rotate `SECRET_KEY`** if you ever suspect compromise. All outstanding session tokens become invalid; players' next score submission will simply fail with `invalid_session` and the game client requests a fresh token automatically.
 
+8. **Site-specific compose tweaks go in `docker-compose.override.yml`.** Docker Compose auto-merges that file if present, and it's gitignored so it never ships. Use it to, e.g., drop the bundled `db`/`redis` and point the app at managed/external instances, attach to an existing network, or pin a container name — without editing the tracked `docker-compose.yml`. Example:
+
+   ```yaml
+   services:
+     db: !reset null          # use an external Postgres instead of the bundled one
+     redis: !reset null        # use an external Redis instead of the bundled one
+     app:
+       environment:
+         POSTGRES_HOST: my-managed-postgres.internal
+         REDIS_URL: redis://:password@my-managed-redis.internal:6379/0
+         REDIS_RATELIMIT_URL: redis://:password@my-managed-redis.internal:6379/1
+   ```
+
 ---
 
 ## What's in / out of scope
 
 **In scope (v1):**
-- Three-endpoint public API with session-token-guarded score submission.
+- Four-endpoint public API (`/sessions`, `/scores`, `/leaderboards`, `/champions`) with session-token-guarded score submission.
 - Per-game min/max score bounds + named-character / control-char filtering on player names.
-- Admin UI for game management, score moderation (soft-delete + restore), and admin-user management.
-- Per-game cache invalidation, range queries respecting per-game IANA timezone.
+- Admin UI for game management, score moderation (soft-delete + restore), admin-user management, and an interactive API-test page (`/admin/api-test`) for building `/leaderboards` and `/champions` queries.
+- Per-game cache invalidation, range queries respecting per-game IANA timezone, daily-seed champion tallies.
 
 **Out of scope (deliberately deferred):**
 - 2FA for admins (model has room for it).
@@ -257,3 +274,11 @@ export POSTGRES_HOST=127.0.0.1
 ```
 
 The test suite uses `fakeredis` for cache/session tests but a real Postgres for queries that rely on JSONB.
+
+---
+
+## License & disclaimer
+
+Released under the [MIT License](LICENSE) — you are free to use, copy, modify, merge, publish, distribute, sublicense, and sell copies, including in commercial and closed-source products. The only condition is that the copyright notice and license text travel with substantial copies.
+
+**Use at your own risk.** As stated in the LICENSE, the software is provided **"as is", without warranty of any kind**, express or implied. The author(s) and copyright holder(s) are **not liable** for any claim, damages, or other liability — including data loss, leaderboard tampering, downtime, or security incidents — arising from the use of this software. You are responsible for how you deploy, secure, and operate it (see [Production deployment](#production-deployment) and [Threat model](#threat-model)).

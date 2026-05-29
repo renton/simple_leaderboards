@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
-import pytest
+from datetime import UTC, datetime, timedelta
 
 
 def _now():
-    return datetime(2026, 5, 20, 12, 0, tzinfo=timezone.utc)
+    return datetime(2026, 5, 20, 12, 0, tzinfo=UTC)
 
 
 def test_empty_leaderboard_returns_zeros(client, make_game):
@@ -278,8 +276,8 @@ def test_admin_score_soft_delete_invalidates_cache(client, make_game, make_score
         row = db.session.get(S, s.id)
         row.deleted_at = _now()
         db.session.commit()
-    from app.services.cache import bump_game_version
     from app.extensions import redis_client
+    from app.services.cache import bump_game_version
 
     bump_game_version(redis_client, g.id)
     r2 = client.get(f"/api/v1/champions?game={g.slug}").get_json()
