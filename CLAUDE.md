@@ -4,7 +4,7 @@ This file is for Claude (or any AI assistant) picking up work on this repo. The 
 
 ## What this is, in one breath
 
-Self-hosted leaderboards service. Three docker-compose containers (Flask + Postgres + Redis). Public API is exactly three endpoints under `/api/v1/`: `POST /sessions` (issue token), `POST /scores` (consume token + insert), `GET /leaderboards` (cached read). Server-rendered admin UI at `/admin/` for game/admin CRUD and score moderation. v1.
+Self-hosted leaderboards service. Three docker-compose containers (Flask + Postgres + Redis). Public API is four endpoints under `/api/v1/`: `POST /sessions` (issue token), `POST /scores` (consume token + insert), `GET /leaderboards` (cached read), `GET /champions` (daily-seed win tally, cached). Server-rendered admin UI at `/admin/` for game/admin CRUD and score moderation. v1.
 
 ## How to run / develop
 
@@ -73,11 +73,12 @@ app/
 │   ├── sanity.py           all score-submission rejection logic
 │   ├── name_normalize.py   NFC + strip bidi/zero-width/control
 │   ├── device_info.py      ua-parser merge with client-provided hints
-│   └── leaderboard_query.py  SQLAlchemy select builder
+│   ├── leaderboard_query.py  SQLAlchemy select builder
+│   └── champions.py        per-seed winner → win tally per player (window fn + group-by)
 ├── api/                    public JSON API, csrf-exempt blueprint
 │   ├── __init__.py         api_bp + side-effect imports
 │   ├── errors.py           stable error codes table + ApiError handler
-│   ├── sessions.py / scores.py / leaderboards.py
+│   ├── sessions.py / scores.py / leaderboards.py / champions.py
 ├── admin/                  server-rendered UI, @login_required at blueprint level
 │   ├── __init__.py         admin_bp + before_request login enforcement
 │   ├── forms.py            WTForms classes
@@ -91,6 +92,7 @@ app/
 - `app/services/session_tokens.py` — auth correctness; replay protection
 - `app/services/sanity.py` — every public score rejection lives here
 - `app/services/leaderboard_query.py` — the only SQL the public API reads
+- `app/services/champions.py` — window-function tally that rides the same cache scheme
 - `app/services/cache.py` — version-key invalidation scheme
 - `app/services/time_ranges.py` — DST/ISO-week correctness
 - `app/api/scores.py` — orchestrates the token-consume → sanity → insert → cache-bump flow
@@ -103,7 +105,7 @@ app/
 - **Stable error codes**, not free-form messages. See `app/api/errors.py`. The error code is the public contract; the `detail` field is omitted by default and goes to server logs only.
 - **Services are framework-agnostic.** They take a `redis_client` / `session` / `secret_key` as parameters instead of pulling from Flask context. This is what makes them unit-testable without a Flask app.
 - **Time everywhere is `TIMESTAMP WITH TIME ZONE` in UTC.** Game timezone is only used to compute range boundaries in Python before passing UTC datetimes to SQL. No `AT TIME ZONE` in queries.
-- **Cache keys**: `lb:game:{id}:ver` (integer version) and `lb:q:{id}:v{ver}:{params_hash}`. Bump the version to invalidate everything for a game.
+- **Cache keys**: `lb:game:{id}:ver` (integer version) and `lb:q:{id}:v{ver}:{params_hash}`. Bump the version to invalidate everything for a game. Both `/leaderboards` and `/champions` share the prefix; their params dicts differ (champions params include `"_endpoint": "champions"`) so cache entries don't collide.
 - **Soft-delete only.** Public queries always filter `deleted_at IS NULL`. Admin moderation writes an `AdminAction` audit row.
 - **Audit rows on every state-changing admin action**. There's no UI yet — query via SQL.
 - **CSRF**: globally on; `csrf.exempt(api_bp)` for the public API blueprint (called in `create_app()`).
@@ -115,7 +117,8 @@ app/
 2. **Game identity in the public API is the slug**, not the integer PK. Slug regex `^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$` validated on insert.
 3. **Soft-delete + audit row** for moderation, not hard delete.
 4. **No minimum-duration anti-cheat in v1.** Defer until a real game asks for it.
-5. **Three public endpoints**, not two — `/sessions` is a protocol prerequisite, documented in README. Don't "simplify" this away without rethinking the threat model.
+5. **Four public endpoints**, not two — `/sessions` is a protocol prerequisite, `/champions` is a derived view over seeded play. Both documented in README. Don't "simplify" by removing them.
+6. **Champions endpoint computes on read, not via an aggregate table.** The SQL is a CTE with `ROW_NUMBER() OVER (PARTITION BY seed ORDER BY score)` + group-by. Rides the partial index `ix_scores_champions` on `(game_id, submitted_at, seed) WHERE seed IS NOT NULL AND deleted_at IS NULL`. An aggregate table was considered and deferred — soft-delete consistency would require recomputing per-seed leaders anyway, which is the same query.
 
 ## Common gotchas I hit during the initial build
 
@@ -147,6 +150,7 @@ If a request looks like one of these, surface that it's an explicit v2 decision 
 | Add a new rejection code on score submit | `app/services/sanity.py` + `app/api/errors.py` (code table) + the README/`docs/api.md` |
 | Change how the cache invalidates | `app/services/cache.py` — currently version-key scheme |
 | Add a new range type (e.g. "biweekly") | `app/services/time_ranges.py` (VALID_RANGES + handler) + Pydantic Literal in `app/schemas/leaderboards.py` |
+| Adjust how champions are computed | `app/services/champions.py` (window function + group-by); migration `2b41ac9d5e3a` added the partial index |
 | Add a new admin moderation action | `app/admin/scores.py` for the pattern, including the audit-row write |
 | Adjust security headers / CSP | `app/security_headers.py` |
 | Add a new admin form field | `app/admin/forms.py` + the matching template under `app/templates/admin/` |

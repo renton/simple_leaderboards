@@ -93,13 +93,14 @@ Subsequent admins can be created via the **Admins → + New admin** page once yo
 
 ## Integrating from your game
 
-The public API is exactly three endpoints under `/api/v1/`:
+The public API is four endpoints under `/api/v1/`:
 
 | Method | Path | Purpose |
 |---|---|---|
 | `POST` | `/sessions` | Get a single-use session token bound to a game. |
 | `POST` | `/scores` | Submit a score (requires `Authorization: Bearer <token>`). |
 | `GET` | `/leaderboards` | Read scores for a game with filters + pagination. |
+| `GET` | `/champions` | Per-player tally of daily-seed wins (cached, paginated). |
 
 See [`docs/api.md`](docs/api.md) for full reference (parameters, error codes, rate limits).
 
@@ -144,6 +145,23 @@ curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&name=ren'
 # Paginate.
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&page=2&page_size=50'
 ```
+
+### Daily-seed champions
+
+For each distinct seed, whoever posted the best score that day gets a win. The `/champions` endpoint tallies wins per player. Useful for surfacing "king of the daily challenge"-style boards.
+
+```bash
+# All-time tally.
+curl 'http://localhost:8000/api/v1/champions?game=tetris-classic'
+
+# Last 90 days only (use Z suffix; + must be URL-encoded as %2B in query strings).
+curl 'http://localhost:8000/api/v1/champions?game=tetris-classic&since=2026-02-20T00:00:00Z'
+
+# Specific window.
+curl 'http://localhost:8000/api/v1/champions?game=tetris-classic&since=2026-01-01T00:00:00Z&until=2026-04-01T00:00:00Z'
+```
+
+Scores with `seed = null` are ignored; soft-deleted scores are excluded (a cheater's winning score being moderated promotes the runner-up for that seed).
 
 ### Integration notes for game clients
 

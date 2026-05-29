@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, Numeric, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -21,6 +21,13 @@ class Score(Base):
         Index("ix_scores_game_seed_score", "game_id", "seed", "score"),
         Index("ix_scores_game_deleted", "game_id", "deleted_at"),
         Index("ix_scores_player_name", "player_name"),
+        Index(
+            "ix_scores_champions",
+            "game_id",
+            "submitted_at",
+            "seed",
+            postgresql_where=text("seed IS NOT NULL AND deleted_at IS NULL"),
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

@@ -94,6 +94,50 @@ Content-Type: application/json
 
 ---
 
+### `GET /api/v1/champions` — daily-seed win tally per player
+
+For each distinct seed observed in the (optional) time window, awards a "win" to the player with the best score on that seed. Returns players sorted by win count, descending. Useful for "who's the king of the daily challenge" boards.
+
+**Query parameters**
+
+| Parameter | Type | Default | Notes |
+|---|---|---|---|
+| `game` | string (slug) | _required_ | |
+| `since` | ISO 8601 datetime | _none_ | Inclusive lower bound on `submitted_at`. Naive datetimes are assumed UTC. Use `Z` suffix in query strings (not `+00:00` — the `+` needs URL-encoding). |
+| `until` | ISO 8601 datetime | _none_ | Exclusive upper bound on `submitted_at`. Must be > `since` if both are set. |
+| `page` | int | `1` | |
+| `page_size` | int | `25` | Max `50`. |
+
+**Response (200)**
+
+```json
+{
+  "game": "tetris-classic",
+  "since": "2026-01-01T00:00:00Z",
+  "until": null,
+  "total_seeds": 42,
+  "page": 1,
+  "page_size": 25,
+  "total": 8,
+  "results": [
+    {"rank": 1, "player_name": "Ren", "wins": 17},
+    {"rank": 2, "player_name": "Ana", "wins": 12}
+  ]
+}
+```
+
+`total_seeds` is the number of distinct seeds in the window. `total` is the number of distinct champions (paginated). Scores with `seed = NULL` are ignored entirely — this endpoint is for seeded daily-challenge play. Soft-deleted scores are excluded (so soft-deleting a cheater's winning score promotes the runner-up).
+
+Tie-breaking within a seed: better score wins, then earlier `submitted_at`, then lower `id`. Same ordering as the leaderboard query.
+
+Uses the same Redis version-key cache as `/leaderboards` — a score insert or admin moderation action invalidates both endpoints' caches for the affected game. `X-Cache: HIT|MISS` indicates whether the response was served from cache.
+
+**Rate limit:** 60/min per IP.
+
+**Errors:** `400 invalid_request` (unknown param, page_size>50, since>=until), `404 game_not_found`, `429 rate_limited`.
+
+---
+
 ### `GET /api/v1/leaderboards` — query scores
 
 Read-only, cacheable (Redis-backed), no auth required.
@@ -179,6 +223,7 @@ Limits (overridable via env vars):
 | `POST /sessions` | `10/minute;100/hour` (`RATELIMIT_SESSIONS`) |
 | `POST /scores` | `30/minute;300/hour` (`RATELIMIT_SCORES`) |
 | `GET /leaderboards` | `60/minute` (`RATELIMIT_LEADERBOARDS`) |
+| `GET /champions` | `60/minute` (`RATELIMIT_CHAMPIONS`) |
 | Admin login | `5/minute;20/hour` (`RATELIMIT_ADMIN_LOGIN`) |
 
 If you're behind a reverse proxy, set `TRUSTED_PROXY_HOPS=1` (the default) so the app reads the client IP from `X-Forwarded-For`. Set to `0` if you're not behind a proxy.

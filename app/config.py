@@ -60,6 +60,7 @@ class Config:
     RATELIMIT_SESSIONS: str = "10/minute;100/hour"
     RATELIMIT_SCORES: str = "30/minute;300/hour"
     RATELIMIT_LEADERBOARDS: str = "60/minute"
+    RATELIMIT_CHAMPIONS: str = "60/minute"
     RATELIMIT_ADMIN_LOGIN: str = "5/minute;20/hour"
 
     # Admin lockout
