@@ -23,6 +23,10 @@ from wtforms.validators import (
     ValidationError,
 )
 
+# Loose email check — avoids pulling in the optional `email_validator` dependency
+# that WTForms' Email() requires. Good enough to catch obvious typos.
+_EMAIL_RE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
 
 class LoginForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired(), Length(max=64)])
@@ -73,6 +77,22 @@ class GameForm(FlaskForm):
         "Metadata (JSON)",
         default="{}",
         validators=[Optional(), _json_validator],
+    )
+    operator_name = StringField(
+        "Operator / developer name (shown on the privacy policy)",
+        validators=[Optional(), Length(max=128)],
+    )
+    contact_email = StringField(
+        "Privacy contact email (shown on the privacy policy)",
+        validators=[
+            Optional(),
+            Length(max=254),
+            Regexp(_EMAIL_RE, message="Enter a valid email address."),
+        ],
+    )
+    privacy_policy_extra = TextAreaField(
+        "Additional privacy-policy clauses (optional, plain text)",
+        validators=[Optional(), Length(max=20000)],
     )
     archived = BooleanField("Archived (hidden from public API)")
     submit = SubmitField("Save")

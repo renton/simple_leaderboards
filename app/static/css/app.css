@@ -105,6 +105,14 @@ tr:hover td { background: var(--panel-2); }
 .filter-form .filter-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .filter-form .filter-row .field { flex: 1; min-width: 140px; }
 
+/* Privacy policy page */
+.privacy-policy { max-width: 760px; }
+.privacy-policy h2 { font-size: 1.05em; margin-top: 1.6em; }
+.privacy-policy ul { padding-left: 1.2em; }
+.privacy-policy li { margin-bottom: 6px; }
+/* Admin-authored extra clauses: render newlines, but stay HTML-escaped (no |safe). */
+.privacy-extra { white-space: pre-wrap; }
+
 /* API test page */
 .api-test-url-row {
   display: flex;

@@ -36,8 +36,14 @@ A leaderboard-bearing game registered by an admin. Game clients identify a game 
 | `min_score` | `numeric(20,6)` nullable | Minimum allowed score. If set, submissions below this are rejected. |
 | `max_score` | `numeric(20,6)` nullable | Maximum allowed score. If set, submissions above this are rejected. |
 | `metadata` | `jsonb` | Free-form JSON. May declare a `custom_fields` schema (see below). The Python attribute is `Game.meta` because `metadata` is reserved by SQLAlchemy. |
-| `archived` | `bool` | When true, the game is hidden from the public API (`/api/v1/sessions` and `/api/v1/leaderboards` both return `404`). Existing scores are preserved. |
+| `archived` | `bool` | When true, the game is hidden from the public API (`/api/v1/sessions` and `/api/v1/leaderboards` both return `404`) and from the public privacy pages. Existing scores are preserved. |
 | `created_at` | `timestamptz` | |
+| `operator_name` | `varchar(128)` nullable | Operator/developer name shown on the public privacy policy. Falls back to generic wording when unset. |
+| `contact_email` | `varchar(254)` nullable | Privacy contact email shown (and `mailto:`-linked) on the policy. Loosely validated. |
+| `privacy_policy_extra` | `text` nullable | Optional extra clauses appended verbatim (HTML-escaped, newlines preserved) as a final policy section. |
+| `privacy_updated_at` | `timestamptz` nullable | Stamped on each game edit; shown as the policy's "Effective date" (falls back to `created_at`). |
+
+The public privacy pages live at `GET /privacy` (index) and `GET /privacy/<slug>` (per-game policy) — no auth. The policy text is a standard template parameterized by the fields above; see `app/templates/public/privacy_policy.html`.
 
 ### `metadata.custom_fields` schema
 

@@ -37,10 +37,12 @@ def create_app(config: Config | None = None) -> Flask:
 
     from app.admin import admin_bp
     from app.api import api_bp
+    from app.public import public_bp
 
     csrf.exempt(api_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(public_bp)
 
     from app.security_headers import install_security_headers
 

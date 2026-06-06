@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import Boolean, CheckConstraint, Integer, Numeric, String
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
@@ -37,6 +37,16 @@ class Game(Base):
     )
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = utcnow_column()
+
+    # Privacy-policy fields. The public /privacy/<slug> page renders a standard
+    # policy parameterized by these. All nullable so existing games keep working;
+    # the policy template falls back to sensible language when they're unset.
+    operator_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    contact_email: Mapped[str | None] = mapped_column(String(254), nullable=True)
+    privacy_policy_extra: Mapped[str | None] = mapped_column(Text, nullable=True)
+    privacy_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     @validates("slug")
     def _validate_slug(self, _key, value: str) -> str:

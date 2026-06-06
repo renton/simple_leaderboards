@@ -9,17 +9,23 @@
 </head>
 <body>
 <header class="topbar">
-  <a href="{{ url_for('admin.index') }}" class="brand">Simple Leaderboards</a>
   {% if current_user.is_authenticated %}
+  <a href="{{ url_for('admin.index') }}" class="brand">Simple Leaderboards</a>
   <nav>
     <a href="{{ url_for('admin.index') }}">Dashboard</a>
     <a href="{{ url_for('admin.games_list') }}">Games</a>
     <a href="{{ url_for('admin.users_list') }}">Admins</a>
     <a href="{{ url_for('admin.api_test') }}">API Test</a>
+    <a href="{{ url_for('public.privacy_index') }}">Privacy</a>
     <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="link-button">Sign out ({{ current_user.username }})</button>
     </form>
+  </nav>
+  {% else %}
+  <a href="{{ url_for('public.privacy_index') }}" class="brand">Simple Leaderboards</a>
+  <nav>
+    <a href="{{ url_for('public.privacy_index') }}">Privacy</a>
   </nav>
   {% endif %}
 </header>

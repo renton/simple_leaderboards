@@ -12,6 +12,7 @@ A small self-hosted leaderboards service for video games. One Flask app + Postgr
 - [Configuration](#configuration)
 - [Bootstrapping the first admin](#bootstrapping-the-first-admin)
 - [Integrating from your game](#integrating-from-your-game)
+- [Privacy policy](#privacy-policy)
 - [Production deployment](#production-deployment)
 - [What's in / out of scope](#whats-in--out-of-scope)
 - [Threat model](#threat-model)
@@ -178,6 +179,32 @@ Scores with `seed = null` are ignored; soft-deleted scores are excluded (a cheat
 
 ---
 
+## Privacy policy
+
+Because players submit a name plus device/OS info, app stores (and the law in
+many places) expect a privacy policy. Each game gets one automatically:
+
+- **Public URL:** `/privacy/<slug>` (with an index at `/privacy`), reachable
+  without login — this is the "active URL" you link from your Google Play / App
+  Store listing and from inside your game.
+- **What it says:** a standard, conventional policy that comprehensively
+  describes what this software collects (player name, scores, timestamps, seed,
+  device/OS info, custom fields), how IP is used (rate-limiting only, not stored
+  with scores), how data is used and shared (public leaderboard display; no sale;
+  self-hosted, no third-party ad/analytics by default), retention, deletion
+  requests, children, security, and contact info.
+- **Customize per game:** set the operator name, privacy contact email, and any
+  extra clauses in the admin game form (**Games → edit → Privacy policy**).
+
+> ⚠️ **Not legal advice.** This template reflects common practice and the data
+> this software actually handles, and is written to satisfy Google Play's
+> requirement for a privacy policy that "comprehensively discloses how your app
+> collects, uses and shares user data." It is **not** a substitute for legal
+> review — if your audience includes the EU/UK (GDPR), California (CCPA/CPRA), or
+> children (COPPA), have counsel review and adapt it.
+
+---
+
 ## Production deployment
 
 The compose file is production-usable, with these requirements:
@@ -228,6 +255,7 @@ The compose file is production-usable, with these requirements:
 - Four-endpoint public API (`/sessions`, `/scores`, `/leaderboards`, `/champions`) with session-token-guarded score submission.
 - Per-game min/max score bounds + named-character / control-char filtering on player names.
 - Admin UI for game management, score moderation (soft-delete + restore), admin-user management, and an interactive API-test page (`/admin/api-test`) for building `/leaderboards` and `/champions` queries.
+- Public, per-game privacy policy at `/privacy/<slug>` (and an index at `/privacy`) — a standard, Google-Play-aligned policy you can link from your store listing and in-app.
 - Per-game cache invalidation, range queries respecting per-game IANA timezone, daily-seed champion tallies.
 
 **Out of scope (deliberately deferred):**

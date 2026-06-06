@@ -41,9 +41,12 @@ def test_dashboard_picks_first_non_archived_game(signed_in_client, make_game, ma
 def test_dashboard_filter_by_range(signed_in_client, make_game, make_score):
     from datetime import datetime, timedelta
 
-    g = make_game()
+    g = make_game()  # default timezone UTC
     now = datetime.now(UTC)
-    make_score(game=g, player_name="today", score=100, submitted_at=now - timedelta(hours=1))
+    # Noon-today UTC is always inside today's daily window regardless of the
+    # wall-clock hour the test runs at (avoids a midnight-boundary flake).
+    today_noon = now.replace(hour=12, minute=0, second=0, microsecond=0)
+    make_score(game=g, player_name="today", score=100, submitted_at=today_noon)
     make_score(game=g, player_name="oldweek", score=999, submitted_at=now - timedelta(days=30))
     resp = signed_in_client.get(f"/admin/?game_id={g.id}&range=daily")
     assert resp.status_code == 200
