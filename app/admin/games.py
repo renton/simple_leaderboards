@@ -66,6 +66,9 @@ def games_new():
                 max_score=form.max_score.data,
                 meta=json.loads(form.metadata_json.data or "{}"),
                 archived=form.archived.data,
+                operator_name=(form.operator_name.data or None),
+                contact_email=(form.contact_email.data or None),
+                privacy_policy_extra=(form.privacy_policy_extra.data or None),
             )
             db.session.add(game)
             db.session.flush()
@@ -103,6 +106,9 @@ def games_edit(game_id: int):
         form.min_score.data = game.min_score
         form.max_score.data = game.max_score
         form.metadata_json.data = json.dumps(game.meta or {}, indent=2)
+        form.operator_name.data = game.operator_name
+        form.contact_email.data = game.contact_email
+        form.privacy_policy_extra.data = game.privacy_policy_extra
         form.archived.data = game.archived
         return render_template("admin/game_form.html", form=form, mode="edit", game=game)
 
@@ -120,6 +126,13 @@ def games_edit(game_id: int):
             game.max_score = form.max_score.data
             game.meta = json.loads(form.metadata_json.data or "{}")
             game.archived = form.archived.data
+            game.operator_name = form.operator_name.data or None
+            game.contact_email = form.contact_email.data or None
+            game.privacy_policy_extra = form.privacy_policy_extra.data or None
+            # Stamp the policy's "last updated" date whenever a game is edited.
+            from datetime import UTC, datetime
+
+            game.privacy_updated_at = datetime.now(UTC)
             _audit("game.update", game, {"slug": game.slug})
             db.session.commit()
             # Bump cache version so consumers see new bounds / archived state.

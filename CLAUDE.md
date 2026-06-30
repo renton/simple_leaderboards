@@ -4,7 +4,7 @@ This file is for Claude (or any AI assistant) picking up work on this repo. The 
 
 ## What this is, in one breath
 
-Self-hosted leaderboards service. Three docker-compose containers (Flask + Postgres + Redis). Public API is four endpoints under `/api/v1/`: `POST /sessions` (issue token), `POST /scores` (consume token + insert), `GET /leaderboards` (cached read), `GET /champions` (daily-seed win tally, cached). Server-rendered admin UI at `/admin/` for game/admin CRUD and score moderation. v1.
+Self-hosted leaderboards service. Three docker-compose containers (Flask + Postgres + Redis). Public API is four endpoints under `/api/v1/`: `POST /sessions` (issue token), `POST /scores` (consume token + insert), `GET /leaderboards` (cached read), `GET /champions` (daily-seed win tally, cached). Server-rendered admin UI at `/admin/` for game/admin CRUD and score moderation. Public per-game privacy policy at `/privacy/<slug>` (no auth). v1.
 
 ## How to run / develop
 
@@ -84,7 +84,11 @@ app/
 │   ├── forms.py            WTForms classes
 │   ├── auth.py / dashboard.py / games.py / users.py / scores.py
 │   └── api_test.py         read-only page to build/fire /leaderboards + /champions queries (admin-only)
-├── templates/admin/        Jinja2 templates (always autoescape on; never |safe)
+├── public/                 world-readable HTML blueprint (NO login). public_bp.
+│   └── privacy.py          GET /privacy (index) + /privacy/<slug> (per-game policy)
+├── templates/
+│   ├── admin/              Jinja2 templates (always autoescape on; never |safe)
+│   └── public/             privacy_index.html + privacy_policy.html
 └── static/
     ├── css/app.css         single minimal stylesheet
     ├── js/api_test.js      vanilla JS for the API-test page (NO build step; no React/npm)
@@ -129,6 +133,7 @@ or "refresh." Edit the `.js`/`.css`/templates and reload the page.
 5. **Four public endpoints**, not two — `/sessions` is a protocol prerequisite, `/champions` is a derived view over seeded play. Both documented in README. Don't "simplify" by removing them.
 6. **Champions endpoint computes on read, not via an aggregate table.** The SQL is a CTE with `ROW_NUMBER() OVER (PARTITION BY seed ORDER BY score)` + group-by. Rides the partial index `ix_scores_champions` on `(game_id, submitted_at, seed) WHERE seed IS NOT NULL AND deleted_at IS NULL`. An aggregate table was considered and deferred — soft-delete consistency would require recomputing per-seed leaders anyway, which is the same query.
 7. **`/leaderboards` segregates seeded vs non-seeded scores.** With no `seed` param it filters `seed IS NULL` (normal play only); with a `seed` it returns only that seed. There is intentionally no "all scores regardless of seed" view — daily challenges must not pollute the all-time board. See `app/services/leaderboard_query.py` (the `else: base.where(Score.seed.is_(None))` branch). If you change this, update `tests/test_smoke.py` and `docs/api.md` together.
+8. **Privacy policy is a standard template rendered per-game, not stored prose.** `app/templates/public/privacy_policy.html` is the canonical text, parameterized by `Game.operator_name`/`contact_email`/`privacy_policy_extra`. It's written to satisfy Google Play's "comprehensively disclose collection/use/sharing" requirement and must stay accurate to what the code actually collects — if you change what data is collected (e.g. add a stored field, persist IP), update this template. `privacy_policy_extra` is admin free-text rendered HTML-escaped with `white-space: pre-wrap` (never `|safe`).
 
 ## Common gotchas I hit during the initial build
 
@@ -164,6 +169,7 @@ If a request looks like one of these, surface that it's an explicit v2 decision 
 | Add a new admin moderation action | `app/admin/scores.py` for the pattern, including the audit-row write |
 | Adjust security headers / CSP | `app/security_headers.py` |
 | Add a new admin form field | `app/admin/forms.py` + the matching template under `app/templates/admin/` |
+| Change the privacy policy text | `app/templates/public/privacy_policy.html` (route in `app/public/privacy.py`); per-game fields on `Game` |
 | Tweak rate limits | `app/config.py` `RATELIMIT_*` keys; per-route via `current_app.config[...]` |
 | Add a CLI command | `app/cli_commands.py` + register in `app/cli.py` |
 

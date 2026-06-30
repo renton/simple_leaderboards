@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — {{ game.name }}{% endblock %}
+{% block content %}
+{% set operator = game.operator_name or "the operator of this game" %}
+<section class="card privacy-policy">
+  <h1>Privacy Policy — {{ game.name }}</h1>
+  <p class="muted">Effective date: {{ effective_date.strftime('%B %-d, %Y') if effective_date else '—' }}</p>
+
+  <p>
+    This Privacy Policy explains how {{ operator }} ("we", "us") collects, uses,
+    and shares information in connection with the leaderboard for
+    <strong>{{ game.name }}</strong> (the "Game"). It applies specifically to the
+    leaderboard service for this Game. By submitting a score, you agree to the
+    practices described here.
+  </p>
+
+  <h2>1. Information we collect</h2>
+  <p>When you submit a score, we collect the following:</p>
+  <ul>
+    <li>
+      <strong>Player name.</strong> The display name you choose to attach to your
+      score. Please do not use your real name or any other personal information —
+      the name is shown publicly on the leaderboard.
+    </li>
+    <li>
+      <strong>Gameplay data.</strong> Your score, the time the score was achieved
+      and submitted, the daily-challenge "seed" (if applicable), and any
+      game-specific fields the Game chooses to send (for example, level reached or
+      combo count).
+    </li>
+    <li>
+      <strong>Device and technical information.</strong> Information about the
+      device and software you use to submit a score, which may include operating
+      system, browser or app identifier, device model, application/game version,
+      screen resolution, locale, and platform. Some of this is derived from your
+      browser/app's User-Agent string; some may be provided by the Game.
+    </li>
+    <li>
+      <strong>IP address.</strong> Your IP address is processed temporarily to
+      enforce rate limits, prevent abuse, and protect the service. It is
+      <em>not</em> stored alongside your score in our leaderboard database.
+    </li>
+  </ul>
+
+  <h2>2. How we use information</h2>
+  <ul>
+    <li>To display public leaderboards and daily-challenge "champion" tallies.</li>
+    <li>To operate, maintain, and secure the service.</li>
+    <li>To detect, prevent, and respond to cheating, fraud, and abuse.</li>
+    <li>To compute aggregate, non-identifying statistics (such as win counts per player name).</li>
+  </ul>
+
+  <h2>3. How we share information</h2>
+  <ul>
+    <li>
+      <strong>Public display.</strong> Leaderboard entries — including the player
+      name, score, and a summary of device/OS information — are publicly visible
+      through the Game and the service's public API.
+    </li>
+    <li>
+      <strong>No sale of data.</strong> We do not sell your information.
+    </li>
+    <li>
+      <strong>Third parties.</strong> This is a self-hosted service. We do not
+      share your information with third-party advertisers or analytics providers
+      as part of its default operation. We may disclose information if required to
+      do so by law, or to protect the rights, safety, and security of the service
+      and its users.
+    </li>
+    <li>
+      <strong>Service providers.</strong> Information is stored on the
+      infrastructure operated by {{ operator }} and any hosting provider they use
+      to run this service.
+    </li>
+  </ul>
+
+  <h2>4. Cookies</h2>
+  <p>
+    Submitting and viewing scores does not require or set any cookies. A single
+    cookie is used only to keep administrators signed in to the private admin
+    area; it is not used for players or for tracking.
+  </p>
+
+  <h2>5. Data retention</h2>
+  <p>
+    Scores and their associated data are retained until removed by an
+    administrator or upon a valid request (see "Your choices" below).
+    Administrators may hide or delete scores at their discretion (for example, to
+    remove cheated entries). Technical data used for rate limiting (such as your
+    IP address) is short-lived and expires automatically.
+  </p>
+
+  <h2>6. Your choices and rights</h2>
+  <p>
+    Leaderboard entries are pseudonymous — they are tied only to the player name
+    you chose, not to an account. Depending on where you live, you may have rights
+    to access, correct, or delete information that relates to you. To request the
+    removal or correction of a score, contact us using the details in the
+    "Contact" section below and include enough information (such as the player
+    name, Game, and approximate score and date) to identify the entry.
+  </p>
+
+  <h2>7. Children's privacy</h2>
+  <p>
+    This service is not directed to children under the age of 13 (or the minimum
+    age required in your jurisdiction), and we do not knowingly collect personal
+    information from them. Players should not submit personal information as a
+    player name. If you believe a child has provided personal information, contact
+    us and we will take reasonable steps to remove it.
+  </p>
+
+  <h2>8. Security</h2>
+  <p>
+    We take reasonable measures to protect information, including hashing
+    administrator credentials and supporting encrypted (HTTPS) connections.
+    However, no method of transmission or storage is completely secure, and we
+    cannot guarantee absolute security.
+  </p>
+
+  <h2>9. International users</h2>
+  <p>
+    Your information is processed and stored on infrastructure operated by
+    {{ operator }}, which may be located in a different country than your own. By
+    using the service, you understand that your information may be transferred to
+    and processed in those locations.
+  </p>
+
+  <h2>10. Changes to this policy</h2>
+  <p>
+    We may update this Privacy Policy from time to time. When we do, we will
+    revise the "Effective date" above. Continued use of the leaderboard after a
+    change indicates acceptance of the updated policy.
+  </p>
+
+  <h2>11. Contact</h2>
+  <p>
+    {% if game.contact_email %}
+      For privacy questions or requests, contact us at
+      <a href="mailto:{{ game.contact_email }}">{{ game.contact_email }}</a>.
+    {% else %}
+      For privacy questions or requests, contact the operator who provided you
+      access to this Game.
+    {% endif %}
+  </p>
+
+  {% if game.privacy_policy_extra %}
+  <h2>12. Additional terms for {{ game.name }}</h2>
+  <div class="privacy-extra">{{ game.privacy_policy_extra }}</div>
+  {% endif %}
+</section>
+{% endblock %}

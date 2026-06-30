@@ -47,6 +47,33 @@
       {% for e in form.metadata_json.errors %}<p class="error">{{ e }}</p>{% endfor %}
     </div>
 
+    <fieldset class="field" style="border:1px solid var(--border); border-radius:var(--radius); padding:14px;">
+      <legend class="muted">Privacy policy</legend>
+      <p class="muted">
+        Powers the public policy at
+        {% if mode == 'edit' and game %}
+          <a href="{{ url_for('public.privacy_policy', slug=game.slug) }}" target="_blank" rel="noopener"><code>/privacy/{{ game.slug }}</code></a>.
+        {% else %}
+          <code>/privacy/&lt;slug&gt;</code> once the game is created.
+        {% endif %}
+        Link that URL from your app store listing and in-game.
+      </p>
+
+      <div class="field">
+        {{ form.operator_name.label }} {{ form.operator_name() }}
+        {% for e in form.operator_name.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.contact_email.label }} {{ form.contact_email() }}
+        {% for e in form.contact_email.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.privacy_policy_extra.label }} {{ form.privacy_policy_extra() }}
+        <p class="muted">Appended verbatim as an extra section. Plain text; line breaks are preserved.</p>
+        {% for e in form.privacy_policy_extra.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+    </fieldset>
+
     <div class="field">
       <label>{{ form.archived() }} {{ form.archived.label.text }}</label>
     </div>

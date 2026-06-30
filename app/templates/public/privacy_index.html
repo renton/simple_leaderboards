@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policies — Simple Leaderboards{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Privacy policies</h1>
+  <p class="muted">
+    Each game hosted on this service publishes its own privacy policy describing
+    what data it collects when you submit a score.
+  </p>
+
+  {% if games %}
+  <table>
+    <thead>
+      <tr><th>Game</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+      <tr>
+        <td>{{ g.name }}</td>
+        <td><a href="{{ url_for('public.privacy_policy', slug=g.slug) }}">View privacy policy →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No games are currently published.</p>
+  {% endif %}
+</section>
+{% endblock %}
