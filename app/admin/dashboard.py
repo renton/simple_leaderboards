@@ -14,6 +14,7 @@ from app.services.leaderboard_query import (
     LeaderboardQuery,
     run_leaderboard_query,
 )
+from app.services.daily_seed import date_to_seed, looks_like_date
 from app.services.time_ranges import VALID_RANGES
 
 
@@ -51,7 +52,8 @@ def index():
     if range_name not in VALID_RANGES:
         range_name = "all-time"
 
-    seed = (request.args.get("seed") or "").strip() or None
+    seed_raw = (request.args.get("seed") or "").strip()
+    seed = date_to_seed(seed_raw) if seed_raw and looks_like_date(seed_raw) else seed_raw or None
     name = (request.args.get("name") or "").strip() or None
     sort = request.args.get("sort", "score")
     if sort not in {"score", "submitted_at", "played_at"}:
@@ -88,7 +90,7 @@ def index():
         result=result,
         filters={
             "range": range_name,
-            "seed": seed or "",
+            "seed": seed_raw,
             "name": name or "",
             "sort": sort,
             "page": page,

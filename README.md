@@ -126,7 +126,7 @@ curl -fsS -X POST http://localhost:8000/api/v1/scores \
       "game": "tetris-classic",
       "player_name": "Ren",
       "score": 31415,
-      "seed": "daily-2026-05-20",
+      "seed": "3421789012",
       "custom_data": {"combo": 47, "perfect": true}
     }'
 
@@ -139,8 +139,8 @@ curl -fsS -X POST http://localhost:8000/api/v1/scores \
 # All-time top 25 of NORMAL (non-seeded) play.
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic'
 
-# A specific daily-challenge board (pass its seed).
-curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&range=daily&seed=daily-2026-05-20'
+# A specific daily-challenge board (pass its seed hash).
+curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&range=daily&seed=3421789012'
 
 # Search for a player.
 curl 'http://localhost:8000/api/v1/leaderboards?game=tetris-classic&name=ren'
@@ -174,7 +174,7 @@ Scores with `seed = null` are ignored; soft-deleted scores are excluded (a cheat
 - Request a *fresh* token before each score submission. Tokens are single-use.
 - Tokens are bound to a specific game (by slug); submitting a score for a different game returns `401 invalid_session`.
 - `played_at` is optional, in ISO 8601 (`2026-05-20T12:34:56Z`). It must be ≥ the token's issuance time and ≤ now + 60s of skew tolerance.
-- `seed` is for daily-challenge style leaderboards. Free-form `[A-Za-z0-9_-]` up to 64 chars; leave it `null` for normal play.
+- `seed` is for daily-challenge style leaderboards. Leave it `null` for normal play. For daily challenges, the seed is the **Godot DJB2-XOR hash** of the date string `"YYYY-MM-DD"` (in US Eastern time, accounting for DST), returned as an **unsigned 32-bit decimal string** — e.g. `"3421789012"`. The algorithm: start with `h = 5381`; for each character `c`, compute `h = ((h * 33) XOR ord(c)) mod 2³²`. This matches GDScript's built-in `hash()` function. The admin dashboard and API test page accept a calendar date and convert it automatically.
 - `custom_data` is any small JSON object (≤32 keys, ≤256 chars per string value). The admin may pin a schema per game (see `docs/data_models.md`).
 
 ---

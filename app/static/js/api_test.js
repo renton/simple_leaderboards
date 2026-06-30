@@ -1,3 +1,18 @@
+// Replicates GDScript's hash() for ASCII strings (Godot DJB2-XOR, uint32).
+function godotStringHash(s) {
+  var h = 5381;
+  for (var i = 0; i < s.length; i++) {
+    h = (Math.imul(h, 33) ^ s.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function dateToSeed(dateStr) {
+  return String(godotStringHash(dateStr));
+}
+
+var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 (function () {
   const inputs = [
     'param-endpoint','param-game','param-range','param-sort','param-seed',
@@ -40,7 +55,8 @@
 
     const range = val('param-range');
     const sort  = val('param-sort');
-    const seed  = val('param-seed');
+    var seedRaw = val('param-seed');
+    var seed    = (seedRaw && DATE_RE.test(seedRaw)) ? dateToSeed(seedRaw) : seedRaw;
     const name  = val('param-name');
     const params = new URLSearchParams({ game, range, sort, page_size: pageSize, page });
     if (seed) params.set('seed', seed);
