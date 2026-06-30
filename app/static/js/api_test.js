@@ -1,18 +1,3 @@
-// Replicates GDScript's hash() for ASCII strings (Godot DJB2-XOR, uint32).
-function godotStringHash(s) {
-  var h = 5381;
-  for (var i = 0; i < s.length; i++) {
-    h = (Math.imul(h, 33) ^ s.charCodeAt(i)) >>> 0;
-  }
-  return h;
-}
-
-function dateToSeed(dateStr) {
-  return String(godotStringHash(dateStr));
-}
-
-var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
 (function () {
   const inputs = [
     'param-endpoint','param-game','param-range','param-sort','param-seed',
@@ -55,8 +40,7 @@ var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
     const range = val('param-range');
     const sort  = val('param-sort');
-    var seedRaw = val('param-seed');
-    var seed    = (seedRaw && DATE_RE.test(seedRaw)) ? dateToSeed(seedRaw) : seedRaw;
+    const seed  = val('param-seed');
     const name  = val('param-name');
     const params = new URLSearchParams({ game, range, sort, page_size: pageSize, page });
     if (seed) params.set('seed', seed);
@@ -68,6 +52,25 @@ var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
     document.getElementById('request-url').textContent = buildUrl();
   }
 
+  function loadSeeds(slug) {
+    var select = document.getElementById('param-seed');
+    select.innerHTML = '<option value="">— normal play —</option>';
+    if (!slug) { updateUrl(); return; }
+    fetch('/admin/api/seeds?game=' + encodeURIComponent(slug), {
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        (data.seeds || []).forEach(function (s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          select.appendChild(opt);
+        });
+        updateUrl();
+      });
+  }
+
   inputs.forEach(function (id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -77,8 +80,12 @@ var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
   document.getElementById('param-endpoint').addEventListener('change', toggleEndpointFields);
 
+  document.getElementById('param-game').addEventListener('change', function () {
+    loadSeeds(this.value);
+  });
+
   toggleEndpointFields();
-  updateUrl();
+  loadSeeds(val('param-game'));
 
   function syntaxHighlight(json) {
     json = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');

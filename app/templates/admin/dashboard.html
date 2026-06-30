@@ -29,8 +29,13 @@
         </select>
       </div>
       <div class="field">
-        <label for="seed">Daily challenge date</label>
-        <input id="seed" name="seed" type="date" value="{{ filters.seed }}">
+        <label for="seed">Daily challenge</label>
+        <select id="seed" name="seed">
+          <option value="">— normal play —</option>
+          {% for s in seeds %}
+            <option value="{{ s }}" {% if filters.seed == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="field">
         <label for="name">Player name contains</label>

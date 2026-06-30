@@ -14,7 +14,7 @@ from app.services.leaderboard_query import (
     LeaderboardQuery,
     run_leaderboard_query,
 )
-from app.services.daily_seed import date_to_seed, looks_like_date
+from app.models.score import Score
 from app.services.time_ranges import VALID_RANGES
 
 
@@ -52,8 +52,7 @@ def index():
     if range_name not in VALID_RANGES:
         range_name = "all-time"
 
-    seed_raw = (request.args.get("seed") or "").strip()
-    seed = date_to_seed(seed_raw) if seed_raw and looks_like_date(seed_raw) else seed_raw or None
+    seed = (request.args.get("seed") or "").strip() or None
     name = (request.args.get("name") or "").strip() or None
     sort = request.args.get("sort", "score")
     if sort not in {"score", "submitted_at", "played_at"}:
@@ -66,6 +65,15 @@ def index():
         lo=1,
         hi=MAX_PAGE_SIZE,
     )
+
+    seeds = []
+    if selected_game is not None:
+        seeds = db.session.execute(
+            db.select(Score.seed)
+            .where(Score.game_id == selected_game.id, Score.seed.is_not(None), Score.deleted_at.is_(None))
+            .distinct()
+            .order_by(Score.seed.desc())
+        ).scalars().all()
 
     result = None
     if selected_game is not None:
@@ -88,9 +96,10 @@ def index():
         games=games,
         selected_game=selected_game,
         result=result,
+        seeds=seeds,
         filters={
             "range": range_name,
-            "seed": seed_raw,
+            "seed": seed or "",
             "name": name or "",
             "sort": sort,
             "page": page,
