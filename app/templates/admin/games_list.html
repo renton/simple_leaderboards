@@ -37,7 +37,7 @@
           <div class="row-actions">
             <a class="button-secondary btn-sm" href="{{ url_for('admin.games_edit', game_id=g.id) }}">Edit</a>
             <form method="post" action="{{ url_for('admin.scores_clear', game_id=g.id) }}" class="inline"
-                  onsubmit="return confirm('Soft-delete ALL scores for \'{{ g.slug }}\' (including daily challenges)?\n\nScores are hidden, not permanently deleted. This cannot be undone from the UI.');">
+                  data-confirm="Soft-delete ALL scores for '{{ g.slug }}' (including daily challenges)? Scores are hidden, not permanently deleted.">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="button-danger btn-sm">Clear scores</button>
             </form>
