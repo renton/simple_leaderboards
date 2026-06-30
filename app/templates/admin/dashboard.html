@@ -31,10 +31,9 @@
       <div class="field">
         <label>Daily challenge</label>
         <input type="hidden" name="seed" id="seed-date-value" value="{{ filters.seed_date }}">
-        <div id="seed-calendar"
-             data-active="{{ active_dates | tojson }}"
-             data-selected="{{ filters.seed_date }}">
-        </div>
+        <button type="button" id="seed-picker-btn" class="button-secondary seed-picker-trigger">
+          {{ filters.seed_date if filters.seed_date else '— normal play —' }}
+        </button>
       </div>
       <div class="field">
         <label for="name">Player name contains</label>
@@ -140,6 +139,19 @@
   {% endif %}
 </section>
 {% endif %}
+
+<div id="seed-modal-overlay" class="cal-overlay" aria-hidden="true">
+  <div class="cal-modal" role="dialog" aria-modal="true" aria-label="Pick a daily challenge date">
+    <div class="cal-modal-header">
+      <span class="cal-modal-title">Daily challenge</span>
+      <button type="button" class="cal-modal-close" id="seed-modal-close" aria-label="Close">&#215;</button>
+    </div>
+    <div id="seed-calendar"
+         data-active="{{ active_dates | tojson }}"
+         data-selected="{{ filters.seed_date }}">
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
