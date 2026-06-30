@@ -33,7 +33,14 @@
           {% else %}<span class="muted">unbounded</span>{% endif %}
         </td>
         <td>{{ 'yes' if g.archived else 'no' }}</td>
-        <td><a href="{{ url_for('admin.games_edit', game_id=g.id) }}">Edit</a></td>
+        <td style="display:flex; gap:8px; align-items:center;">
+          <a href="{{ url_for('admin.games_edit', game_id=g.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('admin.scores_clear', game_id=g.id) }}" class="inline"
+                onsubmit="return confirm('Soft-delete ALL active scores for \'{{ g.slug }}\' (including daily challenges and champions)? This cannot be undone from the UI.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="button-danger" style="padding:4px 10px; font-size:0.85em;">Clear scores</button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

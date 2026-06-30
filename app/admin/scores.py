@@ -11,6 +11,7 @@ from flask_login import current_user, login_required
 from app.admin import admin_bp
 from app.extensions import db, redis_client
 from app.models.admin_action import AdminAction
+from app.models.game import Game
 from app.models.score import Score
 from app.services.cache import bump_game_version
 
@@ -34,6 +35,47 @@ def _audit(action: str, score: Score, details: dict | None = None) -> None:
             details=details or {},
         )
     )
+
+
+@admin_bp.route("/games/<int:game_id>/scores/clear", methods=["POST"])
+@login_required
+def scores_clear(game_id: int):
+    game = db.session.get(Game, game_id)
+    if game is None:
+        abort(404)
+
+    now = datetime.now(UTC)
+    updated = (
+        db.session.execute(
+            db.update(Score)
+            .where(Score.game_id == game_id, Score.deleted_at.is_(None))
+            .values(deleted_at=now)
+            .returning(Score.id)
+        )
+        .scalars()
+        .all()
+    )
+    count = len(updated)
+
+    if count:
+        db.session.add(
+            AdminAction(
+                admin_user_id=current_user.id,
+                action="scores.clear_all",
+                target_type="game",
+                target_id=game_id,
+                details={"count": count, "slug": game.slug},
+            )
+        )
+        db.session.commit()
+        bump_game_version(redis_client, game_id)
+        log.info("scores_cleared", extra={"game_id": game_id, "count": count, "admin": current_user.username})
+        flash(f"Cleared {count} score(s) from '{game.slug}'.", "success")
+    else:
+        db.session.rollback()
+        flash(f"No active scores to clear for '{game.slug}'.", "warning")
+
+    return redirect(url_for("admin.games_list"))
 
 
 @admin_bp.route("/scores/<int:score_id>/delete", methods=["POST"])
