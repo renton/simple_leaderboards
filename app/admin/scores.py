@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime
 
-from flask import abort, flash, redirect, request, url_for
+from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.admin import admin_bp
@@ -35,6 +35,19 @@ def _audit(action: str, score: Score, details: dict | None = None) -> None:
             details=details or {},
         )
     )
+
+
+@admin_bp.route("/games/<int:game_id>/scores/clear", methods=["GET"])
+@login_required
+def scores_clear_confirm(game_id: int):
+    game = db.session.get(Game, game_id)
+    if game is None:
+        abort(404)
+    count = db.session.execute(
+        db.select(db.func.count()).select_from(Score)
+        .where(Score.game_id == game_id, Score.deleted_at.is_(None))
+    ).scalar_one()
+    return render_template("admin/scores_clear_confirm.html", game=game, count=count)
 
 
 @admin_bp.route("/games/<int:game_id>/scores/clear", methods=["POST"])
