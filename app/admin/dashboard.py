@@ -2,19 +2,22 @@
 
 from __future__ import annotations
 
+from datetime import date as date_cls, timedelta
+
 from flask import render_template, request
 from flask_login import login_required
 
 from app.admin import admin_bp
 from app.extensions import db
 from app.models.game import Game
+from app.models.score import Score
+from app.services.daily_seed import date_to_seed, godot_string_hash, looks_like_date
 from app.services.leaderboard_query import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
     LeaderboardQuery,
     run_leaderboard_query,
 )
-from app.models.score import Score
 from app.services.time_ranges import VALID_RANGES
 
 
@@ -40,7 +43,6 @@ def index():
     if selected_id and selected_id.isdigit():
         selected_game = db.session.get(Game, int(selected_id))
     if selected_game is None and games:
-        # Default to first non-archived game so the dashboard is useful immediately.
         for g in games:
             if not g.archived:
                 selected_game = g
@@ -52,7 +54,12 @@ def index():
     if range_name not in VALID_RANGES:
         range_name = "all-time"
 
-    seed = (request.args.get("seed") or "").strip() or None
+    # seed_date is a YYYY-MM-DD string submitted by the calendar widget.
+    # We convert it to the hash for the DB query.
+    seed_raw = (request.args.get("seed") or "").strip()
+    seed_date = seed_raw if looks_like_date(seed_raw) else ""
+    seed = date_to_seed(seed_date) if seed_date else None
+
     name = (request.args.get("name") or "").strip() or None
     sort = request.args.get("sort", "score")
     if sort not in {"score", "submitted_at", "played_at"}:
@@ -66,14 +73,25 @@ def index():
         hi=MAX_PAGE_SIZE,
     )
 
-    seeds = []
+    # Fetch distinct seeds for the selected game, then reverse-map to dates
+    # by hashing a 2-year window and checking for matches.
+    active_dates: list[str] = []
     if selected_game is not None:
-        seeds = db.session.execute(
+        seed_rows = db.session.execute(
             db.select(Score.seed)
             .where(Score.game_id == selected_game.id, Score.seed.is_not(None), Score.deleted_at.is_(None))
             .distinct()
-            .order_by(Score.seed.desc())
         ).scalars().all()
+
+        seed_set = {str(s) for s in seed_rows}
+        if seed_set:
+            today_d = date_cls.today()
+            d = today_d - timedelta(days=730)
+            while d <= today_d:
+                ds = d.strftime("%Y-%m-%d")
+                if str(godot_string_hash(ds)) in seed_set:
+                    active_dates.append(ds)
+                d += timedelta(days=1)
 
     result = None
     if selected_game is not None:
@@ -96,10 +114,10 @@ def index():
         games=games,
         selected_game=selected_game,
         result=result,
-        seeds=seeds,
+        active_dates=active_dates,
         filters={
             "range": range_name,
-            "seed": seed or "",
+            "seed_date": seed_date,
             "name": name or "",
             "sort": sort,
             "page": page,

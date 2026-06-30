@@ -29,13 +29,12 @@
         </select>
       </div>
       <div class="field">
-        <label for="seed">Daily challenge</label>
-        <select id="seed" name="seed">
-          <option value="">— normal play —</option>
-          {% for s in seeds %}
-            <option value="{{ s }}" {% if filters.seed == s %}selected{% endif %}>{{ s }}</option>
-          {% endfor %}
-        </select>
+        <label>Daily challenge</label>
+        <input type="hidden" name="seed" id="seed-date-value" value="{{ filters.seed_date }}">
+        <div id="seed-calendar"
+             data-active="{{ active_dates | tojson }}"
+             data-selected="{{ filters.seed_date }}">
+        </div>
       </div>
       <div class="field">
         <label for="name">Player name contains</label>
@@ -125,13 +124,13 @@
       {% set next_page = filters.page + 1 %}
       {% set last_page = (result.total + result.page_size - 1) // result.page_size %}
       {% if filters.page > 1 %}
-        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ prev_page }}">← Prev</a>
+        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed_date }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ prev_page }}">← Prev</a>
       {% else %}
         <span class="muted">← Prev</span>
       {% endif %}
       <span class="muted">Page {{ filters.page }} of {{ last_page if last_page > 0 else 1 }}</span>
       {% if filters.page < last_page %}
-        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ next_page }}">Next →</a>
+        <a href="?game_id={{ selected_game.id }}&amp;range={{ filters.range }}&amp;seed={{ filters.seed_date }}&amp;name={{ filters.name }}&amp;sort={{ filters.sort }}&amp;page_size={{ filters.page_size }}&amp;page={{ next_page }}">Next →</a>
       {% else %}
         <span class="muted">Next →</span>
       {% endif %}
@@ -141,4 +140,7 @@
   {% endif %}
 </section>
 {% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

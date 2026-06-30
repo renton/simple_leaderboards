@@ -23,11 +23,10 @@ _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def godot_string_hash(s: str) -> int:
-    """DJB2-XOR matching GDScript's hash() for ASCII strings. Returns uint32."""
+    """DJB2-add matching GDScript's hash() for ASCII strings. Returns uint32."""
     h = 5381
     for c in s:
-        h = ((h << 5) + h) ^ ord(c)
-        h &= 0xFFFFFFFF
+        h = (h * 33 + ord(c)) & 0xFFFFFFFF
     return h
 
 
